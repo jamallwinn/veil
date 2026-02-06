@@ -2,7 +2,7 @@
 
 **Private payments on XRPL. Zero-knowledge. Zero trace.**
 
-Veil is a privacy-first payment application built natively on XRPL's EVM Sidechain that enables private XRP and USDC transactions using zero-knowledge cryptography. It deploys custom Circom circuits, Groth16 proofs, and Solidity smart contracts to mathematically break the on-chain link between sender and recipient -- no blockchain observer can connect the two parties.
+Veil is a privacy-first payment application for XRPL Mainnet that leverages the XRPL EVM Sidechain to enable private XRP and USDC transactions using zero-knowledge cryptography. It deploys custom Circom circuits, Groth16 proofs, and Solidity smart contracts to mathematically break the on-chain link between sender and recipient -- no blockchain observer can connect the two parties.
 
 ## Why Veil Exists
 
