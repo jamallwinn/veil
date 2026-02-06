@@ -1,0 +1,24 @@
+node_modules/
+dist/
+build/
+cache/
+artifacts/
+.env
+*.log
+.DS_Store
+playwright-report/
+test-results/
+coverage/
+
+# Test artifacts
+e2e-deposit-note.json
+e2e-final-note.json
+fresh-xrpl-wallet.json
+test-deposit-note.json
+test-proof.json
+
+# Tauri
+src-tauri/target/
+
+# Hardhat
+hardhat.config.ts.bak

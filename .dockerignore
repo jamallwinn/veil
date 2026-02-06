@@ -1,0 +1,77 @@
+# Veil Private XRP Payments - Docker Ignore
+# Exclude files not needed in the container
+
+# Dependencies (will be installed fresh)
+node_modules/
+.pnpm-store/
+
+# Tauri / Desktop app (not needed for web deployment)
+src-tauri/
+*.dmg
+*.app
+*.exe
+*.msi
+*.AppImage
+
+# Development files
+.git/
+.gitignore
+.env
+.env.local
+.env.*.local
+*.log
+
+# Test files
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/test/
+tests/
+e2e/
+playwright.config.ts
+playwright-report/
+test-results/
+coverage/
+vitest.config.ts
+vitest.integration.config.ts
+
+# Documentation
+*.md
+!README.md
+docs/
+CHANGELOG.md
+Progress.txt
+
+# Build artifacts not needed
+build/powersOfTau15_final.ptau
+build/withdraw_0000.zkey
+build/withdraw_0001.zkey
+build/withdraw_0002.zkey
+build/withdraw.r1cs
+build/withdraw.sym
+build/withdraw_final.zkey.json
+artifacts/
+cache/
+typechain-types/
+
+# Smart contract development (not needed for frontend)
+contracts/
+circuits/
+scripts/
+deployments/
+hardhat.config.cjs
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Misc
+*.tgz
+*.tar.gz
+*.zip

@@ -1,0 +1,16 @@
+{
+  "network": "xrplEvmMainnet",
+  "chainId": "1440000",
+  "timestamp": "2026-02-01T00:35:04.816Z",
+  "deployer": "0xFDBF74dc0Db3C5F1680839a4F7fd299c914070a2",
+  "contracts": {
+    "Verifier": "0x8EAd4fb6e3fEA46c22a39f2da02E65E916D2Cd13",
+    "PrivacyPool": "0xf765F2A56EF0f6d09438E2113a2FC9932b9645bB",
+    "tokenType": "native"
+  },
+  "config": {
+    "denomination": "1000000000000000000",
+    "treeLevels": 20,
+    "rootHistorySize": 30
+  }
+}

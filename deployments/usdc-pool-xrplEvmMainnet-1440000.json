@@ -1,0 +1,19 @@
+{
+  "network": "xrplEvmMainnet",
+  "chainId": "1440000",
+  "timestamp": "2026-02-03T02:35:25.489Z",
+  "deployer": "0xFDBF74dc0Db3C5F1680839a4F7fd299c914070a2",
+  "type": "USDC_PRIVACY_POOL",
+  "contracts": {
+    "Verifier": "0x8EAd4fb6e3fEA46c22a39f2da02E65E916D2Cd13",
+    "PrivacyPool": "0xFCafF9d4Ae430b3c4585b711868E807957804D69",
+    "USDCToken": "0xDaF4556169c4F3f2231d8ab7BC8772Ddb7D4c84C"
+  },
+  "config": {
+    "denomination": "3000000000000000",
+    "denominationHuman": "3 USDC",
+    "decimals": 15,
+    "treeLevels": 20,
+    "rootHistorySize": 30
+  }
+}

@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veil — Private XRP Payments</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Outfit:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --obsidian: #0a0a0b;
+      --charcoal: #131315;
+      --graphite: #1a1a1c;
+      --slate: #2a2a2e;
+      --platinum: #e8e4dd;
+      --platinum-dim: #a8a4a0;
+      --gold: #c9a962;
+      --gold-dim: #8a7545;
+      --teal: #4a7a7a;
+      --teal-bright: #5a9a9a;
+      --danger: #a65454;
+      --success: #5a8a5a;
+
+      --font-display: 'Space Grotesk', system-ui, sans-serif;
+      --font-body: 'Outfit', system-ui, sans-serif;
+
+      --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--obsidian);
+      color: var(--platinum);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Noise texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      opacity: 0.03;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    /* Utility classes */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+
+    /* App container */
+    #app {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 1.5rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(to bottom, var(--obsidian) 0%, transparent 100%);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--platinum);
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      position: relative;
+    }
+
+    .logo-icon::before,
+    .logo-icon::after {
+      content: '';
+      position: absolute;
+      border: 1.5px solid var(--platinum);
+      border-radius: 50%;
+    }
+
+    .logo-icon::before {
+      inset: 0;
+    }
+
+    .logo-icon::after {
+      inset: 6px;
+      border-color: var(--gold);
+    }
+
+    .logo-text {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    .wallet-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.625rem 1.25rem;
+      background: transparent;
+      border: 1px solid var(--slate);
+      border-radius: 2rem;
+      color: var(--platinum-dim);
+      font-family: var(--font-body);
+      font-size: 0.875rem;
+      font-weight: 400;
+      cursor: pointer;
+      transition: all 0.3s var(--ease-out-quart);
+    }
+
+    .wallet-btn:hover {
+      border-color: var(--platinum-dim);
+      color: var(--platinum);
+    }
+
+    .wallet-btn.connected {
+      border-color: var(--teal);
+      color: var(--platinum);
+    }
+
+    .wallet-btn.connected::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--teal-bright);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--teal-bright);
+    }
+
+    /* Landing page */
+    .landing {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 8rem 2rem 4rem;
+      text-align: center;
+      position: relative;
+    }
+
+    /* Geometric background pattern */
+    .landing-bg {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .landing-bg::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 800px;
+      height: 800px;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle, var(--graphite) 0%, transparent 70%);
+      opacity: 0.5;
+    }
+
+    .vault-ring {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      border: 1px solid var(--slate);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0.3;
+    }
+
+    .vault-ring:nth-child(1) { width: 300px; height: 300px; }
+    .vault-ring:nth-child(2) { width: 500px; height: 500px; }
+    .vault-ring:nth-child(3) { width: 700px; height: 700px; }
+    .vault-ring:nth-child(4) { width: 900px; height: 900px; }
+
+    .landing-content {
+      position: relative;
+      z-index: 1;
+      max-width: 640px;
+    }
+
+    .landing-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--graphite);
+      border: 1px solid var(--slate);
+      border-radius: 2rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--platinum-dim);
+      margin-bottom: 2rem;
+      animation: fadeInUp 0.8s var(--ease-out-expo) both;
+    }
+
+    .landing-tag::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--gold);
+      border-radius: 50%;
+    }
+
+    .landing-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      animation: fadeInUp 0.8s var(--ease-out-expo) 0.1s both;
+    }
+
+    .landing-title span {
+      color: var(--gold);
+    }
+
+    .landing-desc {
+      font-size: 1.125rem;
+      font-weight: 300;
+      line-height: 1.6;
+      color: var(--platinum-dim);
+      margin-bottom: 3rem;
+      animation: fadeInUp 0.8s var(--ease-out-expo) 0.2s both;
+    }
+
+    .landing-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      animation: fadeInUp 0.8s var(--ease-out-expo) 0.3s both;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 1rem 2rem;
+      font-family: var(--font-body);
+      font-size: 0.9375rem;
+      font-weight: 500;
+      text-decoration: none;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      transition: all 0.3s var(--ease-out-quart);
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--platinum);
+      color: var(--obsidian);
+    }
+
+    .btn-primary:hover {
+      background: var(--gold);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(201, 169, 98, 0.2);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--platinum);
+      border: 1px solid var(--slate);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--platinum-dim);
+      background: var(--graphite);
+    }
+
+    /* Features */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+      max-width: 900px;
+      margin: 4rem auto 0;
+      padding: 0 2rem;
+      animation: fadeInUp 0.8s var(--ease-out-expo) 0.4s both;
+    }
+
+    @media (max-width: 768px) {
+      .features {
+        grid-template-columns: 1fr;
+        max-width: 400px;
+      }
+    }
+
+    .feature {
+      text-align: center;
+      padding: 1.5rem;
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--slate);
+      border-radius: 50%;
+      color: var(--gold);
+    }
+
+    .feature-title {
+      font-family: var(--font-display);
+      font-size: 0.9375rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    .feature-desc {
+      font-size: 0.875rem;
+      font-weight: 300;
+      color: var(--platinum-dim);
+      line-height: 1.5;
+    }
+
+    /* Demo banner */
+    .demo-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 200;
+      padding: 0.75rem;
+      background: var(--gold);
+      color: var(--obsidian);
+      text-align: center;
+      font-size: 0.875rem;
+      font-weight: 500;
+      display: none;
+    }
+
+    .demo-banner.active {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .demo-banner button {
+      padding: 0.25rem 0.75rem;
+      background: var(--obsidian);
+      color: var(--platinum);
+      border: none;
+      border-radius: 0.25rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    /* Payment app */
+    .payment-app {
+      display: none;
+      flex: 1;
+      padding: 6rem 2rem 2rem;
+    }
+
+    .payment-app.active {
+      display: block;
+    }
+
+    .payment-container {
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .payment-card {
+      background: var(--charcoal);
+      border: 1px solid var(--slate);
+      border-radius: 1rem;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .payment-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--teal), var(--gold));
+    }
+
+    .payment-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .payment-title {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 500;
+    }
+
+    .privacy-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.375rem 0.75rem;
+      background: rgba(74, 122, 122, 0.15);
+      border: 1px solid var(--teal);
+      border-radius: 2rem;
+      font-size: 0.75rem;
+      color: var(--teal-bright);
+    }
+
+    .privacy-badge svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+      color: var(--platinum-dim);
+    }
+
+    .form-balance {
+      font-size: 0.75rem;
+      color: var(--platinum-dim);
+    }
+
+    .form-input-wrapper {
+      position: relative;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 1rem;
+      background: var(--obsidian);
+      border: 1px solid var(--slate);
+      border-radius: 0.5rem;
+      color: var(--platinum);
+      font-family: var(--font-body);
+      font-size: 1rem;
+      transition: all 0.2s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(74, 122, 122, 0.15);
+    }
+
+    .form-input::placeholder {
+      color: var(--platinum-dim);
+      opacity: 0.5;
+    }
+
+    .form-suffix {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--platinum-dim);
+    }
+
+    .form-input.has-suffix {
+      padding-right: 3.5rem;
+    }
+
+    /* Fees disclosure */
+    .fees-toggle {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      background: var(--obsidian);
+      border: 1px solid var(--slate);
+      border-radius: 0.5rem;
+      cursor: pointer;
+      margin-bottom: 1.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .fees-toggle:hover {
+      border-color: var(--platinum-dim);
+    }
+
+    .fees-toggle-label {
+      font-size: 0.875rem;
+      color: var(--platinum-dim);
+    }
+
+    .fees-toggle-value {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      color: var(--platinum);
+    }
+
+    .fees-toggle-icon {
+      width: 16px;
+      height: 16px;
+      color: var(--platinum-dim);
+      transition: transform 0.2s ease;
+    }
+
+    .fees-toggle.open .fees-toggle-icon {
+      transform: rotate(180deg);
+    }
+
+    .fees-details {
+      display: none;
+      padding: 1rem;
+      background: var(--obsidian);
+      border: 1px solid var(--slate);
+      border-top: none;
+      border-radius: 0 0 0.5rem 0.5rem;
+      margin-top: -0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .fees-details.open {
+      display: block;
+    }
+
+    .fee-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8125rem;
+      color: var(--platinum-dim);
+      padding: 0.375rem 0;
+    }
+
+    .fee-row.total {
+      color: var(--platinum);
+      border-top: 1px solid var(--slate);
+      margin-top: 0.5rem;
+      padding-top: 0.75rem;
+      font-weight: 500;
+    }
+
+    /* Submit button */
+    .submit-btn {
+      width: 100%;
+      padding: 1.125rem;
+      background: linear-gradient(135deg, var(--platinum) 0%, #d4d0c8 100%);
+      color: var(--obsidian);
+      border: none;
+      border-radius: 0.5rem;
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s var(--ease-out-quart);
+    }
+
+    .submit-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(232, 228, 221, 0.15);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Progress view */
+    .progress-view {
+      display: none;
+    }
+
+    .progress-view.active {
+      display: block;
+    }
+
+    .progress-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .progress-title {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    .progress-subtitle {
+      font-size: 0.9375rem;
+      color: var(--platinum-dim);
+    }
+
+    /* Vault progress indicator */
+    .vault-progress {
+      position: relative;
+      width: 240px;
+      height: 240px;
+      margin: 0 auto 3rem;
+    }
+
+    .vault-ring-progress {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+    }
+
+    .vault-ring-bg {
+      stroke: var(--slate);
+    }
+
+    .vault-ring-fill {
+      stroke: var(--gold);
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1s var(--ease-out-expo);
+    }
+
+    .vault-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .vault-stage {
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--platinum-dim);
+      margin-bottom: 0.25rem;
+    }
+
+    .vault-status {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--platinum);
+    }
+
+    /* Stages list */
+    .stages-list {
+      max-width: 360px;
+      margin: 0 auto;
+    }
+
+    .stage-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--slate);
+    }
+
+    .stage-item:last-child {
+      border-bottom: none;
+    }
+
+    .stage-indicator {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--slate);
+      border-radius: 50%;
+      color: var(--platinum-dim);
+      font-size: 0.875rem;
+      font-weight: 500;
+      flex-shrink: 0;
+      transition: all 0.3s ease;
+    }
+
+    .stage-item.active .stage-indicator {
+      border-color: var(--teal);
+      color: var(--teal-bright);
+      animation: pulse 2s infinite;
+    }
+
+    .stage-item.complete .stage-indicator {
+      border-color: var(--gold);
+      background: var(--gold);
+      color: var(--obsidian);
+    }
+
+    .stage-content {
+      flex: 1;
+    }
+
+    .stage-name {
+      font-size: 0.9375rem;
+      font-weight: 500;
+      margin-bottom: 0.125rem;
+    }
+
+    .stage-item.pending .stage-name {
+      color: var(--platinum-dim);
+    }
+
+    .stage-desc {
+      font-size: 0.8125rem;
+      color: var(--platinum-dim);
+    }
+
+    .stage-time {
+      font-size: 0.75rem;
+      color: var(--platinum-dim);
+    }
+
+    /* Completion view */
+    .completion-view {
+      display: none;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .completion-view.active {
+      display: block;
+    }
+
+    .completion-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dim) 100%);
+      border-radius: 50%;
+      color: var(--obsidian);
+      animation: scaleIn 0.5s var(--ease-out-expo);
+    }
+
+    .completion-icon svg {
+      width: 40px;
+      height: 40px;
+    }
+
+    .completion-title {
+      font-family: var(--font-display);
+      font-size: 1.75rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    .completion-amount {
+      font-size: 1.125rem;
+      color: var(--platinum-dim);
+      margin-bottom: 2rem;
+    }
+
+    .completion-amount strong {
+      color: var(--platinum);
+      font-weight: 600;
+    }
+
+    .completion-details {
+      background: var(--charcoal);
+      border: 1px solid var(--slate);
+      border-radius: 0.5rem;
+      padding: 1.25rem;
+      margin-bottom: 2rem;
+      text-align: left;
+    }
+
+    .completion-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      font-size: 0.875rem;
+    }
+
+    .completion-row:not(:last-child) {
+      border-bottom: 1px solid var(--slate);
+    }
+
+    .completion-label {
+      color: var(--platinum-dim);
+    }
+
+    .completion-value {
+      color: var(--platinum);
+      font-family: var(--font-display);
+    }
+
+    .privacy-confirmed {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      background: rgba(74, 122, 122, 0.1);
+      border: 1px solid var(--teal);
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      color: var(--teal-bright);
+      margin-bottom: 2rem;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        box-shadow: 0 0 0 0 rgba(90, 154, 154, 0.4);
+      }
+      50% {
+        box-shadow: 0 0 0 8px rgba(90, 154, 154, 0);
+      }
+    }
+
+    @keyframes scaleIn {
+      from {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--slate);
+      border-top-color: var(--teal-bright);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    /* Footer */
+    .footer {
+      padding: 2rem;
+      text-align: center;
+      font-size: 0.8125rem;
+      color: var(--platinum-dim);
+      border-top: 1px solid var(--slate);
+      margin-top: auto;
+    }
+
+    .footer a {
+      color: var(--platinum);
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      color: var(--gold);
+    }
+
+    /* Hide views by default */
+    .view {
+      display: none;
+    }
+
+    .view.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Demo Banner -->
+    <div class="demo-banner" id="demoBanner">
+      <span>Demo Mode — Simulated transaction flow</span>
+      <button onclick="exitDemo()">Exit Demo</button>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+      <a href="#" class="logo" onclick="showLanding(); return false;">
+        <div class="logo-icon"></div>
+        <span class="logo-text">Veil</span>
+      </a>
+      <button class="wallet-btn" id="walletBtn" onclick="toggleWallet()">
+        Connect Wallet
+      </button>
+    </header>
+
+    <!-- Landing View -->
+    <main class="landing view active" id="landingView">
+      <div class="landing-bg">
+        <div class="vault-ring"></div>
+        <div class="vault-ring"></div>
+        <div class="vault-ring"></div>
+        <div class="vault-ring"></div>
+      </div>
+
+      <div class="landing-content">
+        <div class="landing-tag">
+          Privacy-First Payments
+        </div>
+
+        <h1 class="landing-title">
+          Send XRP with<br><span>Complete Privacy</span>
+        </h1>
+
+        <p class="landing-desc">
+          Your payment. Your privacy. No trace. Execute private XRP transactions
+          with cryptographic certainty that no one can link sender to recipient.
+        </p>
+
+        <div class="landing-actions">
+          <button class="btn btn-secondary" onclick="startDemo()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            View Demo
+          </button>
+          <button class="btn btn-primary" onclick="startPayment()">
+            Start Private Payment
+          </button>
+        </div>
+      </div>
+
+      <div class="features">
+        <div class="feature">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </div>
+          <h3 class="feature-title">Private</h3>
+          <p class="feature-desc">Zero-knowledge proofs break the on-chain link between sender and recipient</p>
+        </div>
+
+        <div class="feature">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+          <h3 class="feature-title">Fast</h3>
+          <p class="feature-desc">Complete private transactions in 5-15 minutes with XRPL settlement</p>
+        </div>
+
+        <div class="feature">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              <path d="M9 12l2 2 4-4"></path>
+            </svg>
+          </div>
+          <h3 class="feature-title">Secure</h3>
+          <p class="feature-desc">Audited RAILGUN protocol with built-in compliance proofs</p>
+        </div>
+      </div>
+    </main>
+
+    <!-- Payment View -->
+    <main class="payment-app view" id="paymentView">
+      <div class="payment-container">
+        <!-- Payment Form -->
+        <div class="payment-card" id="paymentForm">
+          <div class="payment-header">
+            <h2 class="payment-title">Private Payment</h2>
+            <div class="privacy-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              Protected
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span>Amount</span>
+              <span class="form-balance">Balance: <span id="balance">0.00</span> XRP</span>
+            </label>
+            <div class="form-input-wrapper">
+              <input
+                type="text"
+                class="form-input has-suffix"
+                id="amountInput"
+                placeholder="0.00"
+                oninput="updateFees()"
+              >
+              <span class="form-suffix">XRP</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span>Recipient Address</span>
+            </label>
+            <input
+              type="text"
+              class="form-input"
+              id="recipientInput"
+              placeholder="rXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+            >
+          </div>
+
+          <div class="fees-toggle" id="feesToggle" onclick="toggleFees()">
+            <span class="fees-toggle-label">Estimated Fees</span>
+            <span class="fees-toggle-value">
+              <span id="totalFee">~0.80 XRP</span>
+              <svg class="fees-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </span>
+          </div>
+
+          <div class="fees-details" id="feesDetails">
+            <div class="fee-row">
+              <span>Bridge fee (x2)</span>
+              <span>~0.30 XRP</span>
+            </div>
+            <div class="fee-row">
+              <span>Privacy pool (0.5%)</span>
+              <span id="privacyFee">0.50 XRP</span>
+            </div>
+            <div class="fee-row">
+              <span>Network fees</span>
+              <span>~0.01 XRP</span>
+            </div>
+            <div class="fee-row total">
+              <span>Total Fees</span>
+              <span id="totalFeeDetail">~0.81 XRP</span>
+            </div>
+          </div>
+
+          <button class="submit-btn" id="submitBtn" onclick="submitPayment()">
+            Review Payment
+          </button>
+        </div>
+
+        <!-- Progress View -->
+        <div class="progress-view" id="progressView">
+          <div class="progress-header">
+            <h2 class="progress-title">Payment in Progress</h2>
+            <p class="progress-subtitle">Estimated time: 5-10 minutes</p>
+          </div>
+
+          <div class="vault-progress">
+            <svg class="vault-ring-progress" viewBox="0 0 240 240">
+              <circle
+                class="vault-ring-bg"
+                cx="120" cy="120" r="108"
+                fill="none"
+                stroke-width="4"
+              />
+              <circle
+                class="vault-ring-fill"
+                id="progressRing"
+                cx="120" cy="120" r="108"
+                fill="none"
+                stroke-width="4"
+                stroke-dasharray="679"
+                stroke-dashoffset="679"
+                transform="rotate(-90 120 120)"
+              />
+            </svg>
+            <div class="vault-center">
+              <div class="vault-stage" id="currentStage">Stage 1 of 3</div>
+              <div class="vault-status" id="currentStatus">Securing...</div>
+            </div>
+          </div>
+
+          <div class="stages-list">
+            <div class="stage-item active" id="stage1">
+              <div class="stage-indicator">
+                <div class="spinner"></div>
+              </div>
+              <div class="stage-content">
+                <div class="stage-name">Securing Payment</div>
+                <div class="stage-desc">Initiating bridge transfer</div>
+              </div>
+              <div class="stage-time" id="stage1Time">~2 min</div>
+            </div>
+
+            <div class="stage-item pending" id="stage2">
+              <div class="stage-indicator">2</div>
+              <div class="stage-content">
+                <div class="stage-name">Privacy Layer</div>
+                <div class="stage-desc">Adding zero-knowledge protection</div>
+              </div>
+              <div class="stage-time">~3 min</div>
+            </div>
+
+            <div class="stage-item pending" id="stage3">
+              <div class="stage-indicator">3</div>
+              <div class="stage-content">
+                <div class="stage-name">Delivery</div>
+                <div class="stage-desc">Completing settlement</div>
+              </div>
+              <div class="stage-time">~2 min</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Completion View -->
+        <div class="completion-view" id="completionView">
+          <div class="completion-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+
+          <h2 class="completion-title">Payment Complete</h2>
+          <p class="completion-amount"><strong id="deliveredAmount">99.19 XRP</strong> delivered</p>
+
+          <div class="completion-details">
+            <div class="completion-row">
+              <span class="completion-label">Recipient</span>
+              <span class="completion-value" id="completionRecipient">rXYZ...abc</span>
+            </div>
+            <div class="completion-row">
+              <span class="completion-label">Completed</span>
+              <span class="completion-value" id="completionTime">Just now</span>
+            </div>
+            <div class="completion-row">
+              <span class="completion-label">Reference</span>
+              <span class="completion-value" id="completionRef">PRV-8k2m9x</span>
+            </div>
+          </div>
+
+          <div class="privacy-confirmed">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            No link exists between you and this payment
+          </div>
+
+          <button class="btn btn-primary" onclick="resetPayment()">
+            Send Another Payment
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>Powered by RAILGUN Protocol on XRPL EVM • <a href="#">Technical Docs</a> • <a href="#">FAQ</a></p>
+    </footer>
+  </div>
+
+  <script>
+    // State
+    let isDemo = false;
+    let isConnected = false;
+    let walletAddress = '';
+    let currentView = 'landing';
+    let currentStage = 0;
+
+    // Elements
+    const demoBanner = document.getElementById('demoBanner');
+    const walletBtn = document.getElementById('walletBtn');
+    const landingView = document.getElementById('landingView');
+    const paymentView = document.getElementById('paymentView');
+    const paymentForm = document.getElementById('paymentForm');
+    const progressView = document.getElementById('progressView');
+    const completionView = document.getElementById('completionView');
+
+    // Demo mode
+    function startDemo() {
+      isDemo = true;
+      demoBanner.classList.add('active');
+      document.body.style.paddingTop = '52px';
+
+      // Simulate connected wallet
+      simulateWalletConnect();
+
+      // Show payment view
+      showPaymentView();
+
+      // Pre-fill form
+      document.getElementById('amountInput').value = '100';
+      document.getElementById('recipientInput').value = 'rXYZ4k8mN2qP7wR9tL3vJ6sH1fD8gB5cA';
+      document.getElementById('balance').textContent = '500.00';
+      updateFees();
+    }
+
+    function exitDemo() {
+      isDemo = false;
+      demoBanner.classList.remove('active');
+      document.body.style.paddingTop = '0';
+
+      if (!isConnected) {
+        walletBtn.textContent = 'Connect Wallet';
+        walletBtn.classList.remove('connected');
+      }
+
+      showLanding();
+    }
+
+    // Wallet
+    function toggleWallet() {
+      if (isConnected) {
+        disconnectWallet();
+      } else {
+        connectWallet();
+      }
+    }
+
+    function connectWallet() {
+      // Simulate wallet connection
+      walletBtn.innerHTML = '<div class="spinner"></div> Connecting...';
+
+      setTimeout(() => {
+        simulateWalletConnect();
+        document.getElementById('balance').textContent = '500.00';
+      }, 1500);
+    }
+
+    function simulateWalletConnect() {
+      isConnected = true;
+      walletAddress = 'rABC' + Math.random().toString(36).substr(2, 6) + '...xyz';
+      walletBtn.textContent = walletAddress;
+      walletBtn.classList.add('connected');
+    }
+
+    function disconnectWallet() {
+      isConnected = false;
+      walletAddress = '';
+      walletBtn.textContent = 'Connect Wallet';
+      walletBtn.classList.remove('connected');
+    }
+
+    // Navigation
+    function showLanding() {
+      landingView.classList.add('active');
+      paymentView.classList.remove('active');
+      currentView = 'landing';
+      resetForms();
+    }
+
+    function showPaymentView() {
+      landingView.classList.remove('active');
+      paymentView.classList.add('active');
+      paymentForm.style.display = 'block';
+      progressView.classList.remove('active');
+      completionView.classList.remove('active');
+      currentView = 'payment';
+    }
+
+    function startPayment() {
+      if (!isConnected && !isDemo) {
+        connectWallet();
+        setTimeout(() => {
+          if (isConnected) {
+            showPaymentView();
+          }
+        }, 2000);
+      } else {
+        showPaymentView();
+      }
+    }
+
+    // Fees
+    function toggleFees() {
+      const toggle = document.getElementById('feesToggle');
+      const details = document.getElementById('feesDetails');
+      toggle.classList.toggle('open');
+      details.classList.toggle('open');
+    }
+
+    function updateFees() {
+      const amount = parseFloat(document.getElementById('amountInput').value) || 0;
+      const privacyFee = amount * 0.005;
+      const bridgeFee = 0.30;
+      const networkFee = 0.01;
+      const total = privacyFee + bridgeFee + networkFee;
+
+      document.getElementById('privacyFee').textContent = privacyFee.toFixed(2) + ' XRP';
+      document.getElementById('totalFee').textContent = '~' + total.toFixed(2) + ' XRP';
+      document.getElementById('totalFeeDetail').textContent = '~' + total.toFixed(2) + ' XRP';
+    }
+
+    // Payment flow
+    function submitPayment() {
+      const amount = parseFloat(document.getElementById('amountInput').value) || 0;
+      const recipient = document.getElementById('recipientInput').value;
+
+      if (amount <= 0 || !recipient) {
+        alert('Please enter a valid amount and recipient address');
+        return;
+      }
+
+      // Show progress
+      paymentForm.style.display = 'none';
+      progressView.classList.add('active');
+
+      // Start progress simulation
+      simulateProgress(amount);
+    }
+
+    function simulateProgress(amount) {
+      const stages = [
+        { name: 'Securing', duration: isDemo ? 2000 : 30000 },
+        { name: 'Privatizing', duration: isDemo ? 3000 : 45000 },
+        { name: 'Delivering', duration: isDemo ? 2000 : 30000 }
+      ];
+
+      let totalDuration = stages.reduce((acc, s) => acc + s.duration, 0);
+      let elapsed = 0;
+
+      function updateProgress() {
+        const progressRing = document.getElementById('progressRing');
+        const circumference = 679;
+        const progress = elapsed / totalDuration;
+        progressRing.style.strokeDashoffset = circumference * (1 - progress);
+
+        // Determine current stage
+        let stageElapsed = 0;
+        for (let i = 0; i < stages.length; i++) {
+          if (elapsed <= stageElapsed + stages[i].duration) {
+            updateStageUI(i, stages[i].name);
+            break;
+          }
+          stageElapsed += stages[i].duration;
+        }
+
+        elapsed += 100;
+
+        if (elapsed < totalDuration) {
+          requestAnimationFrame(() => setTimeout(updateProgress, 100));
+        } else {
+          completePayment(amount);
+        }
+      }
+
+      updateProgress();
+    }
+
+    function updateStageUI(stageIndex, stageName) {
+      if (currentStage !== stageIndex) {
+        currentStage = stageIndex;
+
+        // Update stage text
+        document.getElementById('currentStage').textContent = `Stage ${stageIndex + 1} of 3`;
+        document.getElementById('currentStatus').textContent = stageName + '...';
+
+        // Update stage items
+        for (let i = 0; i < 3; i++) {
+          const stage = document.getElementById(`stage${i + 1}`);
+          const indicator = stage.querySelector('.stage-indicator');
+
+          if (i < stageIndex) {
+            stage.classList.remove('active', 'pending');
+            stage.classList.add('complete');
+            indicator.innerHTML = '✓';
+          } else if (i === stageIndex) {
+            stage.classList.remove('complete', 'pending');
+            stage.classList.add('active');
+            indicator.innerHTML = '<div class="spinner"></div>';
+          } else {
+            stage.classList.remove('active', 'complete');
+            stage.classList.add('pending');
+            indicator.textContent = i + 1;
+          }
+        }
+      }
+    }
+
+    function completePayment(amount) {
+      progressView.classList.remove('active');
+      completionView.classList.add('active');
+
+      const fees = amount * 0.005 + 0.31;
+      const delivered = amount - fees;
+
+      document.getElementById('deliveredAmount').textContent = delivered.toFixed(2) + ' XRP';
+      document.getElementById('completionRecipient').textContent =
+        document.getElementById('recipientInput').value.substr(0, 8) + '...' +
+        document.getElementById('recipientInput').value.substr(-4);
+      document.getElementById('completionTime').textContent = 'Just now';
+      document.getElementById('completionRef').textContent = 'PRV-' +
+        Math.random().toString(36).substr(2, 6).toUpperCase();
+    }
+
+    function resetPayment() {
+      currentStage = 0;
+      resetForms();
+      showPaymentView();
+
+      // Reset progress ring
+      document.getElementById('progressRing').style.strokeDashoffset = 679;
+
+      // Reset stages
+      for (let i = 0; i < 3; i++) {
+        const stage = document.getElementById(`stage${i + 1}`);
+        const indicator = stage.querySelector('.stage-indicator');
+        stage.classList.remove('active', 'complete');
+        if (i === 0) {
+          stage.classList.add('active');
+          indicator.innerHTML = '<div class="spinner"></div>';
+        } else {
+          stage.classList.add('pending');
+          indicator.textContent = i + 1;
+        }
+      }
+    }
+
+    function resetForms() {
+      document.getElementById('amountInput').value = '';
+      document.getElementById('recipientInput').value = '';
+      updateFees();
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      updateFees();
+    });
+  </script>
+</body>
+</html>

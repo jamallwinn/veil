@@ -1,0 +1,16 @@
+{
+  "network": "xrplEvmTestnet",
+  "chainId": "1449000",
+  "timestamp": "2026-01-31T18:46:04.220Z",
+  "deployer": "0xFDBF74dc0Db3C5F1680839a4F7fd299c914070a2",
+  "contracts": {
+    "Verifier": "0xbb97420f0267456b576DbEE0FA87d782Ed643e49",
+    "PrivacyPool": "0xeF2b8e4c32711AA26AD03042c4ef6f370992355f",
+    "wXRPToken": "0x0000000000000000000000000000000000000000"
+  },
+  "config": {
+    "denomination": "5000000000000000000",
+    "treeLevels": 20,
+    "rootHistorySize": 30
+  }
+}

@@ -1,0 +1,144 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base styles */
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply font-body;
+  }
+
+  /* Noise texture overlay for depth */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    opacity: 0.025;
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-charcoal;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-steel;
+  }
+}
+
+/* Component classes */
+@layer components {
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-8 py-4;
+    @apply font-body text-base font-medium leading-none;
+    @apply rounded-sm cursor-pointer transition-all duration-300 ease-out-quart;
+    @apply border-none;
+  }
+
+  .btn:focus-visible {
+    @apply outline-2 outline-teal-bright outline-offset-2;
+  }
+
+  .btn:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply bg-gradient-to-br from-platinum to-[#d4d0c8] text-obsidian;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    @apply bg-gold -translate-y-0.5 shadow-gold;
+  }
+
+  .btn-secondary {
+    @apply bg-transparent text-platinum border border-slate;
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    @apply border-platinum-dim bg-graphite;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent text-platinum-dim;
+  }
+
+  .btn-ghost:hover:not(:disabled) {
+    @apply text-platinum bg-graphite;
+  }
+
+  /* Inputs */
+  .input {
+    @apply w-full p-4 bg-obsidian border border-slate rounded-md;
+    @apply text-platinum font-body text-base;
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .input::placeholder {
+    @apply text-platinum-muted;
+  }
+
+  .input:focus {
+    @apply outline-none border-teal shadow-teal;
+  }
+
+  .input:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+
+  /* Cards */
+  .card {
+    @apply bg-charcoal border border-slate rounded-lg p-8;
+    @apply relative overflow-hidden;
+  }
+
+  .card-accent::before {
+    content: '';
+    @apply absolute top-0 left-0 right-0 h-[3px];
+    background: linear-gradient(90deg, theme('colors.teal.DEFAULT'), theme('colors.gold.DEFAULT'));
+  }
+
+  /* Badges */
+  .badge {
+    @apply inline-flex items-center gap-1 px-3 py-1;
+    @apply text-xs font-medium tracking-wide uppercase;
+    @apply rounded-full;
+  }
+
+  .badge-teal {
+    @apply bg-teal/15 border border-teal text-teal-bright;
+  }
+
+  .badge-gold {
+    @apply bg-gold/15 border border-gold-dim text-gold;
+  }
+
+  /* Spinner */
+  .spinner {
+    @apply w-4 h-4 border-2 border-slate border-t-teal-bright rounded-full animate-spin;
+  }
+}
+
+/* Utility classes */
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(90deg, theme('colors.teal.bright'), theme('colors.gold.DEFAULT'));
+  }
+}
