@@ -17,8 +17,5 @@ fresh-xrpl-wallet.json
 test-deposit-note.json
 test-proof.json
 
-# Tauri
-src-tauri/target/
-
 # Hardhat
 hardhat.config.ts.bak

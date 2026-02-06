@@ -49,7 +49,7 @@ nullifierHash = Poseidon(nullifier)
 
 | Layer | Technology |
 |-------|------------|
-| Desktop App | Tauri 2.0 + React 18 + TypeScript |
+| Frontend | React 18 + TypeScript |
 | Styling | Tailwind CSS |
 | State Management | Zustand |
 | ZK Circuits | Circom 2.1 (Groth16) |
@@ -80,7 +80,6 @@ veil/
 │   │   └── gemwallet/   # Wallet connectivity
 │   ├── stores/          # Zustand state stores
 │   └── utils/           # Shared utilities
-├── src-tauri/           # Tauri backend (Rust)
 └── tests/               # E2E test suites
 ```
 
@@ -90,14 +89,12 @@ veil/
 
 - Node.js >= 18
 - [GemWallet](https://gemwallet.app/) browser extension
-- Rust toolchain (for Tauri desktop builds)
 
 ### Install and Run
 
 ```bash
 npm install
-npm run dev            # Web dev server on http://localhost:1420
-npm run tauri:dev      # Full desktop app
+npm run dev            # Dev server on http://localhost:1420
 ```
 
 ### Run Tests
@@ -111,8 +108,7 @@ npm run hardhat:test   # Smart contract tests
 ### Build
 
 ```bash
-npm run build          # Web bundle
-npm run tauri:build    # Desktop application
+npm run build          # Production bundle
 ```
 
 ### Smart Contracts
@@ -127,7 +123,7 @@ npm run hardhat:deploy:testnet       # Deploy to XRPL EVM Testnet
 ```
 ┌─────────────┐     ┌──────────────┐     ┌─────────────────┐
 │  React UI   │────>│ Orchestrator │────>│  XRPL EVM Chain │
-│  (Tauri)    │     │              │     │                 │
+│             │     │              │     │                 │
 └─────────────┘     │  ZK Prover   │     │  Privacy Pool   │
                     │  (SnarkJS)   │     │  (Solidity)     │
                     │              │     │                 │

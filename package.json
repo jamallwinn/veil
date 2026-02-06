@@ -1,15 +1,12 @@
 {
   "name": "veil",
   "version": "0.1.0",
-  "description": "Private XRP Payments Desktop Application",
+  "description": "Private XRP/USDC payments on XRPL using zero-knowledge cryptography",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "tauri": "tauri",
-    "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -37,8 +34,6 @@
   "dependencies": {
     "@axelar-network/axelarjs-sdk": "^0.16.1",
     "@gemwallet/api": "^3.8.0",
-    "@tauri-apps/api": "^2.0.0",
-    "@tauri-apps/plugin-store": "^2.0.0",
     "ethers": "^6.13.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -51,7 +46,6 @@
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@openzeppelin/contracts": "^5.4.0",
     "@playwright/test": "^1.48.0",
-    "@tauri-apps/cli": "^2.0.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.0.0",
     "@types/node": "^22.0.0",
